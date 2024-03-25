@@ -93,3 +93,4 @@ func AddGRPCAllowedMethods(grpcResourceData *GrpcResourceData, grpcAllowedMethod
 		}
 	}
 }
+
