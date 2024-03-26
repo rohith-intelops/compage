@@ -25,11 +25,8 @@ compageJSON:
                 Age:
                   datatype: int
               name: User
-        frameworks:
-          - name: go-gin-server 
-            template: compage
-          - name: go-echo-server 
-            template: compage 
+        template: compage
+        framework: go-gin-server
 {{end}}
 {{if .IsGrpcServer}}
 compageJSON:
@@ -87,9 +84,7 @@ compageJSON:
                 City:
                   datatype: string
         template: compage
-        frameworks:
-          - name: go-gin-server 
-          - name: go-echo-server 
+        framework: go-gin-server
     - id: node-90
       name: account-service
       language: go
