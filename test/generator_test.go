@@ -464,6 +464,81 @@ func TestRestServerGeneratorSqlMySQLGORM(t *testing.T) {
 	}
 }
 
+func TestRestServerGeneratorSqlPOSTGRESQLGORM(t *testing.T) {
+	restServerConfigJSON := `{
+    "edges": [],
+    "nodes": [
+        {
+            "id": "node-ef",
+            "name": "user-service",
+            "language": "go",
+            "restConfig": {
+                "server": {
+                    "sqlDB": "PostgreSQL-gorm",
+                    "port": "1337",
+                    "resources": [
+                        {
+                            "fields": {
+                                "Name": {
+                                    "datatype": "string"
+                                },
+                                "Address": {
+                                    "datatype": "Address",
+                                    "isComposite": true
+                                },
+                                "Age": {
+                                    "datatype": "int"
+                                },
+                                "Sign": {
+                                    "datatype": "rune"
+                                }
+                            },
+                            "name": "User"
+                        },
+                        {
+                            "fields": {
+                                "Street": {
+                                    "datatype": "string"
+                                },
+                                "PinCode": {
+                                    "datatype": "string"
+                                },
+                                "City": {
+                                    "datatype": "string"
+                                }
+                            },
+                            "name": "Address"
+                        }
+                    ]
+                },
+                "framework": "go-gin-server",
+                "template": "compage"
+            }
+        }
+    ]
+}`
+	input := project.GenerateCodeRequest{
+		GitPlatformURL:      "https://github.com",
+		GitPlatformUserName: "rohith-intelops",
+		GitRepositoryName:   "first-rest-server-project-postgresql-gorm",
+		ProjectName:         "first-rest-server-project-postgresql-gorm",
+		ProjectJSON:         restServerConfigJSON,
+	}
+	defer func() {
+		_ = os.RemoveAll(utils.GetProjectDirectoryName("first-rest-server-project-postgresql-gorm"))
+	}()
+
+	// retrieve project struct
+	getProject, err := grpc.GetProject(&input)
+	if err != nil {
+		t.Errorf("grpc.GetProject conversion failed = %v", getProject)
+	}
+	// trigger project generation
+	if err0 := handlers.Handle(getProject); err0 != nil {
+		t.Errorf("handlers.Handle failed %s", err0.Error())
+	}
+}
+
 func TestRestServerWithOpenApiGenerator(t *testing.T) {
 	restServerWithOpenAPIConfigJSON := `{
     "edges": [],

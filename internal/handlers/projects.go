@@ -95,7 +95,7 @@ func processNode(coreProject *core.Project, compageNode *corenode.Node) error {
 	err = runLanguageProcess(languageNode, languageCtx)
 	if err != nil {
 		log.Errorf("err : %s", err)
-		return err
+		return err                         
 	}
 	return nil
 }
