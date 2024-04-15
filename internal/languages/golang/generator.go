@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	corenode "github.com/intelops/compage/internal/core/node"
 	"github.com/intelops/compage/internal/languages"
 	commonfiles "github.com/intelops/compage/internal/languages/golang/frameworks/common-files"
+	goechoserver "github.com/intelops/compage/internal/languages/golang/frameworks/go-echo-server"
 	goginserver "github.com/intelops/compage/internal/languages/golang/frameworks/go-gin-server"
 	gogrpcserver "github.com/intelops/compage/internal/languages/golang/frameworks/go-grpc-server"
 	"github.com/intelops/compage/internal/languages/golang/integrations/devcontainer"
@@ -178,6 +180,30 @@ func generateRESTConfig(ctx context.Context, goValues *GoValues) error {
 				}
 				// copy all files at root level, fire this at last
 				if err = goGinServerCopier.CreateRootLevelFiles(); err != nil {
+					log.Errorf("err : %s", err)
+					return err
+				}
+			} else if n.RestConfig.Framework == GoEchoServerFramework {
+				goEchoServerCopier, err := getGoEchoServerCopier(goValues)
+				if err != nil {
+					log.Errorf("error while getting the goEchoServerCopier [" + err.Error() + "]")
+					return err
+				}
+				if n.RestConfig.Server != nil {
+					if err = goEchoServerCopier.CreateRestServer(); err != nil {
+						log.Errorf("err : %s", err)
+						return err
+					}
+				}
+				if n.RestConfig.Clients != nil {
+					//  restConfig.clients - present when client config is provided
+					if err = goEchoServerCopier.CreateRestClients(); err != nil {
+						log.Errorf("err : %s", err)
+						return err
+					}
+				}
+				// copy all files at root level, fire this at last
+				if err = goEchoServerCopier.CreateRootLevelFiles(); err != nil {
 					log.Errorf("err : %s", err)
 					return err
 				}
@@ -355,6 +381,48 @@ func getGoGinServerCopier(goValues *GoValues) (*goginserver.Copier, error) {
 	restClients := goValues.LGoLangNode.RestConfig.Clients
 	// create golang specific copier
 	copier := goginserver.NewCopier(gitPlatformURL, gitPlatformUserName, gitRepositoryName, nodeName, nodeDirectoryName, path, isRestServer, restServerPort, isRestSQLDB, restSQLDB, isRestNoSQLDB, restNoSQLDB, restResources, restClients)
+	return copier, nil
+}
+
+func getGoEchoServerCopier(goValues *GoValues) (*goechoserver.Copier, error) {
+	goTemplatesRootPath := GetGoTemplatesRootPath(goValues.Values.Version)
+	if goTemplatesRootPath == "" {
+		return nil, errors.New("go templates root path is empty")
+	}
+	path := goTemplatesRootPath + "/frameworks/" + GoEchoServerFramework
+
+	gitPlatformURL := goValues.Values.Get(languages.GitPlatformURL)
+	gitPlatformUserName := goValues.Values.Get(languages.GitPlatformUserName)
+	gitRepositoryName := goValues.Values.Get(languages.GitRepositoryName)
+	nodeName := goValues.Values.Get(languages.NodeName)
+	nodeDirectoryName := goValues.Values.NodeDirectoryName
+
+	isRestServer := goValues.LGoLangNode.RestConfig != nil && goValues.LGoLangNode.RestConfig.Server != nil
+	var restServerPort string
+	var restSQLDB string
+	var isRestSQLDB bool
+	var restNoSQLDB string
+	var isRestNoSQLDB bool
+	var restResources []*corenode.Resource
+	if isRestServer {
+		restServerPort = goValues.LGoLangNode.RestConfig.Server.Port
+		restResources = goValues.LGoLangNode.RestConfig.Server.Resources
+		isRestSQLDB = goValues.LGoLangNode.RestConfig.Server.SQLDB != ""
+		restSQLDB = goValues.LGoLangNode.RestConfig.Server.SQLDB
+		isRestNoSQLDB = goValues.LGoLangNode.RestConfig.Server.NoSQLDB != ""
+		restNoSQLDB = goValues.LGoLangNode.RestConfig.Server.NoSQLDB
+	} else {
+		restServerPort = ""
+		isRestSQLDB = false
+		restSQLDB = ""
+		isRestNoSQLDB = false
+		restNoSQLDB = ""
+		restResources = []*corenode.Resource{}
+	}
+
+	restClients := goValues.LGoLangNode.RestConfig.Clients
+	// create golang specific copier
+	copier := goechoserver.NewCopier(gitPlatformURL, gitPlatformUserName, gitRepositoryName, nodeName, nodeDirectoryName, path, isRestServer, restServerPort, isRestSQLDB, restSQLDB, isRestNoSQLDB, restNoSQLDB, restResources, restClients)
 	return copier, nil
 }
 

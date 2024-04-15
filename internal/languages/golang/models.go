@@ -9,6 +9,7 @@ import (
 // TemplateDirectoryName directory of template files
 const TemplateDirectoryName = "compage-template-go"
 const GoGinServerFramework = "go-gin-server"
+const GoEchoServerFramework = "go-echo-server"
 const GoGrpcServerFramework = "go-grpc-server"
 const CommonFiles = "common-files"
 

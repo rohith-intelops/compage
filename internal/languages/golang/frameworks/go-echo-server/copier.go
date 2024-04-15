@@ -21,14 +21,14 @@ import (
 	"golang.org/x/text/language"
 )
 
-const RestServerPath = "/pkg/rest/server"
-const RestClientPath = "/pkg/rest/client"
+const EchoServerPath = "/pkg/echo/server"
+const EchoClientPath = "/pkg/echo/client"
 const ConfigPath = "/config"
 
-const ControllersPath = RestServerPath + "/controllers"
-const ServicesPath = RestServerPath + "/services"
-const DaosPath = RestServerPath + "/daos"
-const ModelsPath = RestServerPath + "/models"
+const ControllersPath = EchoServerPath + "/controllers"
+const ServicesPath = EchoServerPath + "/services"
+const DaosPath = EchoServerPath + "/daos"
+const ModelsPath = EchoServerPath + "/models"
 
 const NoSQLDBClientsPath = DaosPath + "/clients/nosqls"
 const NoSQLControllerFile = "nosqls-controller.go.tmpl"
@@ -59,7 +59,7 @@ const PostgresGORMDaoFile = "postgresql-gorm-dao.go.tmpl"
 const MapDBConfigFile = "map.go.tmpl"
 
 const ClientFile = "client.go.tmpl"
-const ConfigFile = "rest-opentel-config.go.tmpl"
+const ConfigFile = "echo-opentel-config.go.tmpl"
 
 // MongoDB nosql databases
 const MongoDB = "MongoDB"
@@ -147,9 +147,9 @@ func NewCopier(gitPlatformURL, gitPlatformUserName, gitRepositoryName, nodeName,
 	}
 }
 
-// createRestClientDirectories creates rest client directories.
+// createRestClientDirectories creates echo client directories.
 func (c *Copier) createRestClientDirectories() error {
-	clientDirectory := c.NodeDirectoryName + RestClientPath
+	clientDirectory := c.NodeDirectoryName + EchoClientPath
 	if err := utils.CreateDirectories(clientDirectory); err != nil {
 		log.Errorf("error creating client directory: %v", err)
 		return err
@@ -158,7 +158,7 @@ func (c *Copier) createRestClientDirectories() error {
 	return nil
 }
 
-// createRestServerDirectories creates rest server directories.
+// createRestServerDirectories creates echo server directories.
 func (c *Copier) createRestServerDirectories() error {
 	configDirectory := c.NodeDirectoryName + ConfigPath
 	controllersDirectory := c.NodeDirectoryName + ControllersPath
@@ -203,7 +203,7 @@ func (c *Copier) createRestServerDirectories() error {
 	return nil
 }
 
-// copyRestServerResourceFiles copies rest server resource files from template and renames them as per resource config.
+// copyRestServerResourceFiles copies echo server resource files from template and renames them as per resource config.
 func (c *Copier) copyRestServerResourceFiles(resource *corenode.Resource) error {
 	var filePaths []*string
 	var err error
@@ -271,7 +271,7 @@ func (c *Copier) getFuncMap(resource *corenode.Resource) template.FuncMap {
 	return funcMap
 }
 
-// copyRestClientResourceFiles copies rest client files from template and renames them as per client config.
+// copyRestClientResourceFiles copies echo client files from template and renames them as per client config.
 func (c *Copier) copyRestClientResourceFiles(restClient *corenode.RestClient) error {
 	/// add resource-specific data to map in c needed for templates.
 	c.Data["RestClientPort"] = restClient.Port
@@ -279,10 +279,10 @@ func (c *Copier) copyRestClientResourceFiles(restClient *corenode.RestClient) er
 	c.Data["RestClientSourceNodeID"] = strings.Replace(cases.Title(language.Und, cases.NoLower).String(restClient.SourceNodeID), "-", "", -1)
 
 	// copy restClient files to a generated project.
-	targetResourceClientFileName := c.NodeDirectoryName + RestClientPath + "/" + restClient.SourceNodeName + "-" + ClientFile
-	_, err := utils.CopyFile(targetResourceClientFileName, c.TemplatesRootPath+RestClientPath+"/"+ClientFile)
+	targetResourceClientFileName := c.NodeDirectoryName + EchoClientPath + "/" + restClient.SourceNodeName + "-" + ClientFile
+	_, err := utils.CopyFile(targetResourceClientFileName, c.TemplatesRootPath+EchoClientPath+"/"+ClientFile)
 	if err != nil {
-		log.Errorf("error while copying rest client file %s", targetResourceClientFileName)
+		log.Errorf("error while copying echo client file %s", targetResourceClientFileName)
 		return err
 	}
 	var filePaths []*string
@@ -649,13 +649,13 @@ func (c *Copier) CreateRestServer() error {
 	if c.IsRestServer {
 		// create directories for controller, service, dao, models
 		if err := c.createRestServerDirectories(); err != nil {
-			log.Errorf("error creating rest server directories: %v", err)
+			log.Errorf("error creating echo server directories: %v", err)
 			return err
 		}
 		// copy files with respect to the names of resources
 		for _, resource := range c.Resources {
 			if err := c.copyRestServerResourceFiles(resource); err != nil {
-				log.Errorf("error copying rest server resource files: %v", err)
+				log.Errorf("error copying echo server resource files: %v", err)
 				return err
 			}
 		}
@@ -771,14 +771,14 @@ func (c *Copier) CreateRestClients() error {
 	if c.HasRestClients {
 		// create directories for a client
 		if err := c.createRestClientDirectories(); err != nil {
-			log.Errorf("error creating rest client directories: %v", err)
+			log.Errorf("error creating echo client directories: %v", err)
 			return err
 		}
 
 		// copy files with respect to the names of resources
 		for _, client := range c.RestClients {
 			if err := c.copyRestClientResourceFiles(client); err != nil {
-				log.Errorf("error copying rest client resource files: %v", err)
+				log.Errorf("error copying echo client resource files: %v", err)
 				return err
 			}
 		}
