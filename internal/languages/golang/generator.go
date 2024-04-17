@@ -385,11 +385,11 @@ func getGoGinServerCopier(goValues *GoValues) (*goginserver.Copier, error) {
 }
 
 func getGoEchoServerCopier(goValues *GoValues) (*goechoserver.Copier, error) {
-	goTemplatesRootPath := GetGoTemplatesRootPath()
+	goTemplatesRootPath := GetGoTemplatesRootPath(goValues.Values.Version)
 	if goTemplatesRootPath == "" {
 		return nil, errors.New("go templates root path is empty")
 	}
-	path := goTemplatesRootPath + "/frameworks/" + GoGinServerFramework
+	path := goTemplatesRootPath + "/frameworks/" + GoEchoServerFramework
 
 	gitPlatformURL := goValues.Values.Get(languages.GitPlatformURL)
 	gitPlatformUserName := goValues.Values.Get(languages.GitPlatformUserName)
